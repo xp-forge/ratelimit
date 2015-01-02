@@ -1,6 +1,8 @@
 <?php namespace util\invoke\unittest;
 
 use util\invoke\RateLimiting;
+use util\invoke\Per;
+use util\invoke\Rate;
 
 class RateLimitingTest extends \unittest\TestCase {
   private static $clock;
@@ -47,6 +49,11 @@ class RateLimitingTest extends \unittest\TestCase {
     new RateLimiting(2);
   }
 
+  #[@test]
+  public function can_create_with_rate() {
+    new RateLimiting(new Rate(5000, Per::$HOUR));
+  }
+
   #[@test, @values([0, -1]), @expect('lang.IllegalArgumentException')]
   public function rate_cannot_be_zero_or_negative($qps) {
     new RateLimiting($qps);
@@ -54,14 +61,14 @@ class RateLimitingTest extends \unittest\TestCase {
 
   #[@test]
   public function rate() {
-    $this->assertEquals(2, (new RateLimiting(2))->rate());
+    $this->assertEquals(new Rate(2, Per::$SECOND), (new RateLimiting(2))->rate());
   }
 
   #[@test]
   public function throttle() {
     $fixture= new RateLimiting(1000);
     $fixture->throttle(100);
-    $this->assertEquals(900, $fixture->rate());
+    $this->assertEquals(new Rate(900, Per::$SECOND), $fixture->rate());
   }
 
   #[@test, @expect('lang.IllegalArgumentException')]
@@ -73,7 +80,7 @@ class RateLimitingTest extends \unittest\TestCase {
   public function increase() {
     $fixture= new RateLimiting(1000);
     $fixture->increase(100);
-    $this->assertEquals(1100, $fixture->rate());
+    $this->assertEquals(new Rate(1100, Per::$SECOND), $fixture->rate());
   }
 
   #[@test, @values([1, 1000])]
@@ -101,10 +108,27 @@ class RateLimitingTest extends \unittest\TestCase {
   }
 
   #[@test]
+  public function acquiring_one_more_than_permitted_results_in_sleep_until_next_minute() {
+    $fixture= new RateLimiting(new Rate(1, Per::$MINUTE), self::$clock);
+    $fixture->acquire(1);
+    self::$clock->forward(40.0);
+    $this->assertDouble(20.0, $fixture->acquire());
+    $this->assertDouble(60.0, self::$clock->time());
+  }
+
+  #[@test]
   public function acquire_after_waiting_one_second() {
     $fixture= new RateLimiting(1, self::$clock);
     $fixture->acquire(1);
     self::$clock->forward(1.0);
+    $this->assertDouble(0.0, $fixture->acquire(1));
+  }
+
+  #[@test]
+  public function acquire_after_waiting_one_hour() {
+    $fixture= new RateLimiting(new Rate(1, Per::$HOUR), self::$clock);
+    $fixture->acquire(1);
+    self::$clock->forward(3600.0);
     $this->assertDouble(0.0, $fixture->acquire(1));
   }
 

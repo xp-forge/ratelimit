@@ -1,7 +1,5 @@
 <?php namespace util\invoke;
 
-use lang\IllegalArgumentException;
-
 /**
  * A rate limiting can be used to limit the rate at which physical or
  * logical resources are accessed, e.g. to protect them from intentional
@@ -14,43 +12,35 @@ class RateLimiting extends \lang\Object {
   const TIMED_OUT = -1.0;
   const ONE_MICRO = 0.000001;
 
-  private $rate, $clock, $permits, $next, $offset;
+  private $rate, $clock, $offset, $permits= 0, $next= null;
 
   /**
    * Creates a new rate limiting instance
    *
-   * @param  int $rate Queries per second to permit. Must be greater than 0.
+   * @param  var $arg Either a rate instance or an integer referring to a rate per second
    * @param  util.invoke.Clock The clock to use; defaults to system clock.
    * @throws lang.IllegalArgumentException
    */
-  public function __construct($rate, Clock $clock= null) {
-    $this->adjust($rate);
+  public function __construct($arg, Clock $clock= null) {
+    if ($arg instanceof Rate) {
+      $this->rate= $arg;
+    } else {
+      $this->rate= new Rate($arg, Per::$SECOND);
+    }
     $this->clock= $clock ?: new SystemClock();
-    $this->permits= 0;
-    $this->next= null;
   }
 
-  /** @return int */
+  /** @return util.invoke.Rate */
   public function rate() { return $this->rate; }
 
   /** @param int $by */
-  public function throttle($by) { $this->adjust($this->rate - $by); }
+  public function throttle($by) {
+    $this->rate= new Rate($this->rate->value() - $by, $this->rate->unit());
+  }
   
   /** @param int $by */
-  public function increase($by) { $this->adjust($this->rate + $by); }
-
-  /**
-   * Adjust the rate
-   *
-   * @param  int $rate
-   * @throws lang.IllegalArgumentException
-   * @return void
-   */
-  protected function adjust($rate) {
-    if ($rate <= 0) {
-      throw new IllegalArgumentException('Rate cannot be zero or negative');
-    }
-    $this->rate= $rate;
+  public function increase($by) {
+    $this->rate= new Rate($this->rate->value() + $by, $this->rate->unit());
   }
 
   /**
@@ -77,9 +67,9 @@ class RateLimiting extends \lang\Object {
       $this->next= (int)$this->clock->time();
     }
 
-    $diff= ($this->rate - $this->permits);
+    $diff= $this->rate->value() - $this->permits;
     $this->permits+= $permits;
-    $this->next+= $permits - $diff + 1;
+    $this->next+= ($permits - $diff + 1) * $this->rate->unit()->seconds();
     return $sleep;
   }
 
