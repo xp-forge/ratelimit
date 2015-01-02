@@ -25,7 +25,7 @@ Restricting bandwidth
 You can implement bandwidth throttling by acquiring a permit for each byte:
 
 ```php
-$rateLimiter= new RateLimiting(10000);
+$rateLimiter= new RateLimiting(new Rate(1000000, Per::$MINUTE));
 while ($bytes= $source->read()) {
   $rateLimiter->acquire(strlen($bytes));
   $target->write($bytes);
