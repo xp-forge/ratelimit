@@ -1,59 +1,38 @@
 <?php namespace util\invoke\unittest;
 
 use util\invoke\RateLimiting;
-use util\invoke\Per;
-use util\invoke\Rate;
 
 class AcquiringTest extends AbstractRateLimitingTest {
 
-  /** @return var[][] */
-  protected function units() { return [[Per::$SECOND], [Per::$MINUTE], [Per::$HOUR], [Per::$DAY]]; }
-
-  #[@test, @values('units')]
-  public function one_more_than_permitted_results_in_sleep_until_next($unit) {
-    $sleep= (double)($unit->seconds() / 2);
-    $fixture= new RateLimiting(new Rate(1, $unit), self::$clock);
-    $fixture->acquire();
-    self::$clock->forward($sleep);
-    $this->assertDouble($unit->seconds() - $sleep, $fixture->acquire());
-    $this->assertDouble(self::CLOCK_START + $unit->seconds(), self::$clock->time());
+  /**
+   * Constructor
+   *
+   * @param string $name
+   * @param int $rate Defaults to 1
+   */
+  public function __construct($name, $rate= 1) {
+    parent::__construct($name);
+    $this->rate= (int)$rate;
   }
 
-  #[@test, @values('units')]
-  public function after_sleeping_until_next($unit) {
-    $fixture= new RateLimiting(new Rate(1, $unit), self::$clock);
-    $fixture->acquire();
-    self::$clock->forward($unit->seconds());
-    $this->assertDouble(0.0, $fixture->acquire());
-    $this->assertDouble(self::CLOCK_START + $unit->seconds(), self::$clock->time());
+  #[@test]
+  public function first_call_returns_immediately() {
+    $fixture= new RateLimiting($this->rate, self::$clock);
+    $this->assertDouble(0.0, $fixture->acquire(1));
   }
 
-  #[@test, @values('units')]
-  public function try_acquiring_after_waiting_until_next($unit) {
-    $fixture= new RateLimiting(new Rate(1, $unit), self::$clock);
-    $fixture->acquire();
-    self::$clock->forward($unit->seconds());
-    $this->assertTrue($fixture->tryAcquiring(1));
+  #[@test]
+  public function sleeps_for_one_second_if_rate_exceeded() {
+    $fixture= new RateLimiting($this->rate, self::$clock);
+    $fixture->acquire($this->rate);
+    $this->assertDouble(1.0, $fixture->acquire(1));
   }
 
-  #[@test, @values('units')]
-  public function try_acquiring_with_timeout_of_less_than_unit($unit) {
-    $fixture= new RateLimiting(new Rate(1, $unit), self::$clock);
-    $fixture->acquire();
-    $this->assertFalse($fixture->tryAcquiring(1, $unit->seconds() - 0.5));
-  }
-
-  #[@test, @values('units')]
-  public function try_acquiring_with_timeout_of_exactly_unit($unit) {
-    $fixture= new RateLimiting(new Rate(1, $unit), self::$clock);
-    $fixture->acquire();
-    $this->assertTrue($fixture->tryAcquiring(1, $unit->seconds()));
-  }
-
-  #[@test, @values('units')]
-  public function try_acquiring_with_timeout_of_larger_than_unit($unit) {
-    $fixture= new RateLimiting(new Rate(1, $unit), self::$clock);
-    $fixture->acquire();
-    $this->assertTrue($fixture->tryAcquiring(1, $unit->seconds() + 0.5));
+  #[@test]
+  public function returns_immediately_after_having_slept_for_one_second() {
+    $fixture= new RateLimiting($this->rate, self::$clock);
+    $fixture->acquire($this->rate);
+    self::$clock->forward(1.0);
+    $this->assertDouble(0.0, $fixture->acquire(1));
   }
 }

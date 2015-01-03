@@ -32,6 +32,43 @@ while ($bytes= $source->read()) {
 }
 ```
 
+Rate-limiting users
+-------------------
+Implement a scriptlet filter like the following:
+
+```php
+use scriptlet\HttpScriptletException;
+use peer\http\HttpConstants;
+
+class RateLimitingFilter extends \lang\Object implements \scriptlet\Filter {
+  private $rates, $rate, $timeout;
+
+  public function __construct(KeyValueStorage $rates) {
+    $this->rates= $rates;
+    $this->rate= new Rate(5000, Per::$HOUR);
+    $this->timeout= 0.2;
+  }
+
+  public function filter($request, $response, $invocation) {
+    $remote= $request->getEnvValue('REMOTE_ADDR');
+
+    $rateLimiter= $this->rates->get($remote) ?: new RateLimiting($this->rate);
+    $permitted= $rateLimiter->tryAcquiring(1, $this->timeout);
+    $this->rates->put($remote, $rateLimiter);
+
+    $response->setHeader('X-RateLimit-Limit', $rateLimiter->rate()->value());
+    $response->setHeader('X-RateLimit-Remaining', $rateLimiter->remaining());
+    $response->setHeader('X-RateLimit-Reset', $rateLimiter->resetTime());
+
+    if (!$permitted) {
+      throw new HttpScriptletException('Too many requests', HttpConstants::STATUS_TOO_MANY_REQUESTS);
+    }
+
+    return $invocation->proceed($request, $response);
+  }
+}
+```
+
 Further reading
 ---------------
 
