@@ -93,8 +93,8 @@ class RateLimiting extends \lang\Object {
     if (0 === $exceed) {
       $this->next= $time + $this->rate->unit()->seconds();
     } else if ($exceed > 0) {
-      $buffers= (int)ceil($exceed / $this->rate->value());
-      $this->next= $time + $buffers * $this->rate->unit()->seconds();
+      $slots= ceil($exceed / $this->rate->value()) + 1;
+      $this->next= $time + $slots * $this->rate->unit()->seconds();
     }
 
     return $sleep;
