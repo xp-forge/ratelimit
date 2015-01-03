@@ -61,7 +61,7 @@ class RateLimitingFilter extends \lang\Object implements \scriptlet\Filter {
     $response->setHeader('X-RateLimit-Reset', $rateLimiter->resetTime());
 
     if (!$permitted) {
-      throw new HttpScriptletException('Too many requests', HttpConstants::STATUS_TOO_MANY_REQUESTS);
+      throw new HttpScriptletException('Nope', HttpConstants::STATUS_TOO_MANY_REQUESTS);
     }
 
     return $invocation->proceed($request, $response);
