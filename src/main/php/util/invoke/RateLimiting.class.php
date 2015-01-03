@@ -33,6 +33,20 @@ class RateLimiting extends \lang\Object {
   /** @return util.invoke.Rate */
   public function rate() { return $this->rate; }
 
+  /** @return int */
+  public function remaining() {
+    if (null === $this->next) {
+      return $this->rate->value();
+    }
+
+    $slot= (int)$this->clock->time();
+    if ($slot > $this->next) {
+      $this->permits= 0;
+    }
+
+    return max(0, $this->rate->value() - $this->permits);
+  }
+
   /** @param int $by */
   public function throttle($by) {
     $this->rate= new Rate($this->rate->value() - $by, $this->rate->unit());
@@ -67,9 +81,15 @@ class RateLimiting extends \lang\Object {
       $this->next= (int)$this->clock->time();
     }
 
-    $diff= $this->rate->value() - $this->permits;
     $this->permits+= $permits;
-    $this->next+= ($permits - $diff + 1) * $this->rate->unit()->seconds();
+    $rest= $this->rate->value() - $this->permits;
+    if (0 === $rest) {
+      $this->next+= $this->rate->unit()->seconds();
+    } else if ($rest < 0) {
+      // TODO: Check whether temporarily exceeding rate by a given limit is OK?
+      $this->next+= (-$rest + 1) * $this->rate->unit()->seconds();
+    }
+
     return $sleep;
   }
 

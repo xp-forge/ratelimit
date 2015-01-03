@@ -184,4 +184,48 @@ class RateLimitingTest extends \unittest\TestCase {
     $this->assertTrue($fixture->tryAcquiring(100));
     $this->assertEquals($wait, $fixture->acquire(1));
   }
+
+  #[@test]
+  public function remaining_initially_equals_rate() {
+    $fixture= new RateLimiting(1000, self::$clock);
+    $this->assertEquals(1000, $fixture->remaining());
+  }
+
+  #[@test]
+  public function remaining_after_having_acquired_one() {
+    $fixture= new RateLimiting(1000, self::$clock);
+    $fixture->acquire(1);
+    $this->assertEquals(999, $fixture->remaining());
+  }
+
+  #[@test]
+  public function remaining_after_having_acquired_limit() {
+    $fixture= new RateLimiting(1000, self::$clock);
+    $fixture->acquire(1000);
+    $this->assertEquals(0, $fixture->remaining());
+  }
+
+  #[@test]
+  public function remaining_after_having_acquired_limit_and_then_acquiring_one_more() {
+    $fixture= new RateLimiting(1000, self::$clock);
+    $fixture->acquire(1000);
+    $fixture->acquire(1);
+    $this->assertEquals(999, $fixture->remaining());
+    $this->assertDouble(1.0, self::$clock->time());
+  }
+
+  #[@test]
+  public function remaining_after_having_acquired_limit_with_excess_also_zero() {
+    $fixture= new RateLimiting(1000, self::$clock);
+    $fixture->acquire(1001);
+    $this->assertEquals(0, $fixture->remaining());
+  }
+
+  #[@test]
+  public function remaining_reset_after_having_waited_until_next_second() {
+    $fixture= new RateLimiting(1000, self::$clock);
+    $fixture->acquire(1);
+    self::$clock->forward(1.0);
+    $this->assertEquals(1000, $fixture->remaining());
+  }
 }
