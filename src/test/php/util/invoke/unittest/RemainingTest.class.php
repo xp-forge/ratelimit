@@ -47,6 +47,14 @@ abstract class RemainingTest extends AbstractRateLimitingTest {
     $this->assertEquals(0, $this->fixture->remaining());
   }
 
+  #[@test, @values([2, 3, 4])]
+  public function after_having_acquired_one_multiple_times($times) {
+    for ($i= 0; $i < $times; $i++) {
+      $this->fixture->acquire();
+    }
+    $this->assertEquals(self::RATE - $times, $this->fixture->remaining());
+  }
+
   #[@test]
   public function after_having_acquired_limit_and_then_acquiring_one_more() {
     $this->fixture->acquire(self::RATE);
