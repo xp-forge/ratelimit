@@ -6,7 +6,16 @@
  * or unintentional overuse. It is common to apply rate limiting to
  * publicly available APIs by user or IP address.
  *
+ * @test  xp://util.invoke.unittest.AcquiringTest
+ * @test  xp://util.invoke.unittest.ClockOffsetTest
+ * @test  xp://util.invoke.unittest.RateExcessTest
  * @test  xp://util.invoke.unittest.RateLimitingTest
+ * @test  xp://util.invoke.unittest.RemainingPerHourTest
+ * @test  xp://util.invoke.unittest.RemainingPerSecondTest
+ * @test  xp://util.invoke.unittest.ResetTimePerHourTest
+ * @test  xp://util.invoke.unittest.ResetTimePerSecondTest
+ * @test  xp://util.invoke.unittest.VaryingRatesTest
+ * @test  xp://util.invoke.unittest.VaryingUnitsTest
  */
 class RateLimiting extends \lang\Object {
   const TIMED_OUT = -1.0;
