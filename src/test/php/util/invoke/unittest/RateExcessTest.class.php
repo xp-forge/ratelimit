@@ -5,59 +5,67 @@ use util\invoke\Per;
 use util\invoke\Rate;
 
 class RateExcessTest extends AbstractRateLimitingTest {
+  private $fixture;
+
+  /**
+   * Sets up fixture
+   *
+   * @return void
+   */
+  public function setUp() {
+    parent::setUp();
+    $this->fixture= new RateLimiting(10, self::$clock);
+  }
 
   #[@test]
-  public function try_acquiring_100_more_than_limit() {
-    $fixture= new RateLimiting(1, self::$clock);
-    $this->assertTrue($fixture->tryAcquiring(11));
-    $this->assertEquals(10.0, $fixture->acquire(1));
+  public function try_acquiring_10_times_than_limit() {
+    $this->assertTrue($this->fixture->tryAcquiring(100));
+    $this->assertEquals(9.0, $this->fixture->acquire(1));
 
     // 01 - 02 - 03 - 04 - 05 - 06 - 07 - 08 - 09 - 10 - 11 - 12 
-    // [11] *    *    *    *    *    *    *    *    *    *    [1]
+    // [100 *    *    *    *    *    *    *    *    *    [1
+    // [10  [10  [10  [10  [10  [10  [10  [10  [10  [10  [1
   }
 
   #[@test]
   public function try_acquiring_one_more_than_limit() {
-    $fixture= new RateLimiting(10, self::$clock);
-    $this->assertTrue($fixture->tryAcquiring(11));
-    $this->assertEquals(1.0, $fixture->acquire(1));
+    $this->assertTrue($this->fixture->tryAcquiring(11));
+    $this->assertEquals(1.0, $this->fixture->acquire(1));
 
     // 01 - 02 - 03 - 04 - 05 - 06 - 07 - 08 - 09 - 10 - 11 - 12 
-    // [11] [1]
+    // [11  [1 
+    // [10  [2 
   }
 
   #[@test, @ignore]
   public function try_acquiring_twice_the_limit() {
-    $fixture= new RateLimiting(10, self::$clock);
-    $this->assertTrue($fixture->tryAcquiring(20));
-    $this->assertEquals(2.0, $fixture->acquire(1));
+    $this->assertTrue($this->fixture->tryAcquiring(20));
+    $this->assertEquals(2.0, $this->fixture->acquire(1));
 
     // 01 - 02 - 03 - 04 - 05 - 06 - 07 - 08 - 09 - 10 - 11 - 12 
-    // [20] *    [1]
-  }
-
-  #[@test, @ignore]
-  public function try_acquiring_excess_twice() {
-    $fixture= new RateLimiting(10, self::$clock);
-    $this->assertTrue($fixture->tryAcquiring(11));
-    $this->assertEquals(2.0, $fixture->acquire(11));
-
-    // 01 - 02 - 03 - 04 - 05 - 06 - 07 - 08 - 09 - 10 - 11 - 12 
-    // [20] *    [11]
+    // [20  *    [1
+    // [10  [10  [1
   }
 
   #[@test]
-  public function remaining_after_having_acquired_limit_with_excess_also_zero() {
-    $fixture= new RateLimiting(1000, self::$clock);
-    $fixture->acquire(1001);
-    $this->assertEquals(0, $fixture->remaining());
+  public function try_acquiring_excess_twice() {
+    $this->assertTrue($this->fixture->tryAcquiring(11));
+    $this->assertEquals(1.0, $this->fixture->acquire(11));
+
+    // 01 - 02 - 03 - 04 - 05 - 06 - 07 - 08 - 09 - 10 - 11 - 12 
+    // [11  *    [11
+    // [10  [10  [2
   }
 
-  #[@test, @values([0.0, 1.0, 1800.1, 3600.0, 6666.6])]
-  public function resetTime_after_excess_and_sleeping($sleep) {
-    $fixture= new RateLimiting(new Rate(1000, per::$HOUR), self::$clock);
-    $fixture->acquire(1001);
-    self::$clock->forward($sleep);
-    $this->assertDouble(self::CLOCK_START + 3600.0, $fixture->resetTime());
+  #[@test]
+  public function remaining_after_acquiring_excess() {
+    $this->fixture->acquire(11);
+    $this->assertEquals(0, $this->fixture->remaining());
+  }
+
+  #[@test]
+  public function resetTime_after_acquiring_excess() {
+    $this->fixture->acquire(11);
+    $this->assertDouble(self::CLOCK_START + 1.0, $this->fixture->resetTime());
   }
 }
