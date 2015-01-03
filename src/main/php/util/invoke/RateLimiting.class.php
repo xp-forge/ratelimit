@@ -12,7 +12,7 @@ class RateLimiting extends \lang\Object {
   const TIMED_OUT = -1.0;
   const ONE_MICRO = 0.000001;
 
-  private $rate, $clock, $offset, $permits= 0, $next= null;
+  private $rate, $clock, $offset, $permits= 0, $next= null, $reset= null;
 
   /**
    * Creates a new rate limiting instance
@@ -35,17 +35,19 @@ class RateLimiting extends \lang\Object {
 
   /** @return int */
   public function remaining() {
-    if (null === $this->next) {
-      return $this->rate->value();
-    }
+    if (null === $this->next) return $this->rate->value();
 
     $slot= (int)$this->clock->time();
     if ($slot > $this->next) {
       $this->permits= 0;
-    }
-
-    return max(0, $this->rate->value() - $this->permits);
+      return $this->rate->value();
+    } else {
+      return max(0, $this->rate->value() - $this->permits);
+    } 
   }
+
+  /** @return int */
+  public function resetTime() { return $this->reset; } 
 
   /** @param int $by */
   public function throttle($by) {
@@ -72,13 +74,18 @@ class RateLimiting extends \lang\Object {
     if (null === $this->next) {         // First time use
       $this->next= $slot;
       $this->offset= $time - $slot;
-    } else if (($this->next - $slot) >= 1) {
+      $this->reset= $slot + $this->rate->unit()->seconds() + $this->offset;
+    } else if ($this->next > $slot) {
       $sleep= $this->next - $time + $this->offset;
       if (null !== $timeout && $sleep > $timeout) return self::TIMED_OUT;
 
       $this->clock->wait($sleep + self::ONE_MICRO);
       $this->permits= 0;
       $this->next= (int)$this->clock->time();
+      $this->reset= $this->next + $this->rate->unit()->seconds() + $this->offset;
+    } else if ($slot > $this->next) {
+      $this->permits= 0;
+      $this->reset= $slot + $this->rate->unit()->seconds() + $this->offset;
     }
 
     $this->permits+= $permits;
@@ -86,8 +93,9 @@ class RateLimiting extends \lang\Object {
     if (0 === $rest) {
       $this->next+= $this->rate->unit()->seconds();
     } else if ($rest < 0) {
-      // TODO: Check whether temporarily exceeding rate by a given limit is OK?
-      $this->next+= (-$rest + 1) * $this->rate->unit()->seconds();
+      $exceed= -$rest;
+      $buffers= (int)ceil($exceed / $this->rate->value());
+      $this->next+= $this->rate->unit()->seconds() * $buffers;
     }
 
     return $sleep;
