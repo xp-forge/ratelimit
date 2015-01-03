@@ -89,10 +89,10 @@ class RateLimiting extends \lang\Object {
     $this->permits+= $permits;
 
     // If we reached (or exceeded) the rate, set next slot to the future
-    if ($this->permits === $this->rate->value()) {
+    $exceed= $this->permits - $this->rate->value();
+    if (0 === $exceed) {
       $this->next= $time + $this->rate->unit()->seconds();
     } else if ($this->permits > $this->rate->value()) {
-      $exceed= $this->permits - $this->rate->value();
       $buffers= (int)ceil($exceed / $this->rate->value());
       $this->next= $time + $buffers * $this->rate->unit()->seconds();
     }
