@@ -12,7 +12,7 @@ class RateLimiting extends \lang\Object {
   const TIMED_OUT = -1.0;
   const ONE_MICRO = 0.000001;
 
-  private $rate, $clock, $offset, $permits= 0, $next= null, $reset= null;
+  private $rate, $clock, $permits= 0, $next= null, $reset= null;
 
   /**
    * Creates a new rate limiting instance
@@ -35,11 +35,7 @@ class RateLimiting extends \lang\Object {
 
   /** @return int */
   public function remaining() {
-    if (null === $this->next) return $this->rate->value();
-
-    $slot= (int)$this->clock->time();
-    if ($slot > $this->next) {
-      $this->permits= 0;
+    if ((int)$this->clock->time() > $this->next) {
       return $this->rate->value();
     } else {
       return max(0, $this->rate->value() - $this->permits);
@@ -69,33 +65,36 @@ class RateLimiting extends \lang\Object {
   protected function waitFor($permits, $timeout) {
     $time= $this->clock->time();
     $slot= (int)$time;
-    $sleep= 0.0;
 
-    if (null === $this->next) {         // First time use
-      $this->next= $slot;
-      $this->offset= $time - $slot;
-      $this->reset= $slot + $this->rate->unit()->seconds() + $this->offset;
-    } else if ($this->next > $slot) {
-      $sleep= $this->next - $time + $this->offset;
+    // If next slot is in the future, wait
+    if ($this->next > $slot) {
+      $sleep= $this->next - $time;
       if (null !== $timeout && $sleep > $timeout) return self::TIMED_OUT;
 
       $this->clock->wait($sleep + self::ONE_MICRO);
+      $time= $this->clock->time();
+      $slot= (int)$time;
+      $this->next= null;
+    } else {
+      $sleep= 0.0;
+    }
+
+    // If next has passed in the meantime, reset counts
+    if ($slot > $this->next) {
+      $this->reset= $time + $this->rate->unit()->seconds();
       $this->permits= 0;
-      $this->next= (int)$this->clock->time();
-      $this->reset= $this->next + $this->rate->unit()->seconds() + $this->offset;
-    } else if ($slot > $this->next) {
-      $this->permits= 0;
-      $this->reset= $slot + $this->rate->unit()->seconds() + $this->offset;
+      $this->next= $slot;
     }
 
     $this->permits+= $permits;
-    $rest= $this->rate->value() - $this->permits;
-    if (0 === $rest) {
-      $this->next+= $this->rate->unit()->seconds();
-    } else if ($rest < 0) {
-      $exceed= -$rest;
+
+    // If we reached (or exceeded) the rate, set next slot to the future
+    if ($this->permits === $this->rate->value()) {
+      $this->next= $time + $this->rate->unit()->seconds();
+    } else if ($this->permits > $this->rate->value()) {
+      $exceed= $this->permits - $this->rate->value();
       $buffers= (int)ceil($exceed / $this->rate->value());
-      $this->next+= $this->rate->unit()->seconds() * $buffers;
+      $this->next= $time + $buffers * $this->rate->unit()->seconds();
     }
 
     return $sleep;
