@@ -1,5 +1,6 @@
 <?php namespace util\invoke\unittest;
 
+use lang\IllegalArgumentException;
 use util\invoke\RateLimiting;
 use util\invoke\Per;
 use util\invoke\Rate;
@@ -16,7 +17,7 @@ class RateLimitingTest extends AbstractRateLimitingTest {
     new RateLimiting($rate);
   }
 
-  #[@test, @values([0, -1]), @expect('lang.IllegalArgumentException')]
+  #[@test, @values([0, -1]), @expect(IllegalArgumentException::class)]
   public function rate_cannot_be_zero_or_negative($rate) {
     new RateLimiting($rate);
   }
@@ -39,7 +40,7 @@ class RateLimitingTest extends AbstractRateLimitingTest {
     $this->assertEquals(new Rate(self::RATE - 100, Per::$SECOND), $fixture->rate());
   }
 
-  #[@test, @expect('lang.IllegalArgumentException')]
+  #[@test, @expect(IllegalArgumentException::class)]
   public function cannot_throttle_to_zero() {
     (new RateLimiting(self::RATE))->throttle(self::RATE);
   }

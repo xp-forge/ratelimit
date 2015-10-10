@@ -1,5 +1,6 @@
 <?php namespace util\invoke\unittest;
 
+use lang\IllegalArgumentException;
 use util\invoke\Per;
 use util\invoke\Rate;
 
@@ -15,7 +16,7 @@ class RateTest extends \unittest\TestCase {
     new Rate(2, Per::$SECOND);
   }
 
-  #[@test, @values([0, -1]), @expect('lang.IllegalArgumentException')]
+  #[@test, @values([0, -1]), @expect(IllegalArgumentException::class)]
   public function value_cannot_be_zero_or_negative($value) {
     new Rate($value);
   }

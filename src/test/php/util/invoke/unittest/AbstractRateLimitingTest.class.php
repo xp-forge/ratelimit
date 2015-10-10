@@ -1,5 +1,7 @@
 <?php namespace util\invoke\unittest;
 
+use util\invoke\Clock;
+
 abstract class AbstractRateLimitingTest extends \unittest\TestCase {
   const CLOCK_START = 250944900.1;
 
@@ -12,7 +14,7 @@ abstract class AbstractRateLimitingTest extends \unittest\TestCase {
    */
   #[@beforeClass]
   public static function clock() {
-    self::$clock= newinstance('util.invoke.Clock', [], '{
+    self::$clock= newinstance(Clock::class, [], '{
       private $time= 0.0;
       public function resetTo($time) { $this->time= $time; }
       public function forward($seconds) { $this->time+= $seconds; }
