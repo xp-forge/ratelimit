@@ -34,7 +34,7 @@ class Rate extends \lang\Object {
 
   /** @return string */
   public function toString() {
-    return $this->getClassName().'('.$this->value.' / '.strtolower($this->unit->name()).')';
+    return nameof($this).'('.$this->value.' / '.strtolower($this->unit->name()).')';
   }
 
   /**
