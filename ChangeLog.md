@@ -3,6 +3,10 @@ Rate limiting ChangeLog
 
 ## ?.?.? / ????-??-??
 
+## 1.0.0 / 2016-02-21
+
+* Added version compatibility with XP 7 - @thekid
+
 ## 0.3.0 / 2016-01-24
 
 * Fix code to use `nameof()` instead of the deprecated `getClassName()`
