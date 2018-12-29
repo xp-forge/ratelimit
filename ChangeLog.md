@@ -3,6 +3,9 @@ Rate limiting ChangeLog
 
 ## ?.?.? / ????-??-??
 
+## 2.0.0 / 2018-12-29
+
+* **Heads up: Dropped PHP 5.4 support** - @thekid
 * Made compatible with PHP 7.2+ - @thekid
 
 ## 1.0.0 / 2016-02-21
