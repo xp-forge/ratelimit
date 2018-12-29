@@ -17,7 +17,7 @@
  * @test  xp://util.invoke.unittest.VaryingRatesTest
  * @test  xp://util.invoke.unittest.VaryingUnitsTest
  */
-class RateLimiting extends \lang\Object {
+class RateLimiting {
   const TIMED_OUT = -1.0;
   const ONE_MICRO = 0.000001;
 

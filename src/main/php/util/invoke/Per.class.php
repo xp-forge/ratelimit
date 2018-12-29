@@ -1,6 +1,8 @@
 <?php namespace util\invoke;
 
-class Per extends \lang\Enum {
+use lang\Enum;
+
+class Per extends Enum {
   public static $SECOND= 1;
   public static $MINUTE= 60;
   public static $HOUR= 3600;

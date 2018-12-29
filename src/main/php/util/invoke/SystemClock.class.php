@@ -6,7 +6,7 @@
  * @see  php://microtime
  * @see  php://usleep
  */
-class SystemClock extends \lang\Object implements Clock {
+class SystemClock implements Clock {
 
   /** @return double */
   public function time() { return microtime(true); }

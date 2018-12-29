@@ -7,7 +7,7 @@ use lang\IllegalArgumentException;
  *
  * @test  xp://util.invoke.unittest.RateTest
  */
-class Rate extends \lang\Object {
+class Rate {
   private $value, $unit;
 
   /**
