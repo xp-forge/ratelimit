@@ -15,6 +15,8 @@ Restricting usage
 Imagine you don't want to run more than two tasks per second:
 
 ```php
+use util\invoke\RateLimiting;
+
 $rateLimiter= new RateLimiting(2);
 foreach ($tasks as $task) {
   $rateLimiter->acquire();    // will wait if necessary
@@ -27,6 +29,8 @@ Restricting bandwidth
 You can implement bandwidth throttling by acquiring a permit for each byte:
 
 ```php
+use util\invoke\{RateLimiting, Rate, Per};
+
 $rateLimiter= new RateLimiting(new Rate(1000000, Per::$MINUTE));
 while ($bytes= $source->read()) {
   $rateLimiter->acquire(strlen($bytes));
@@ -36,13 +40,13 @@ while ($bytes= $source->read()) {
 
 Rate-limiting users
 -------------------
-Implement a scriptlet filter like the following:
+Implement a filter like the following:
 
 ```php
-use scriptlet\HttpScriptletException;
-use peer\http\HttpConstants;
+use web\{Filter, Error};
+use util\invoke\{RateLimiting, Rate, Per};
 
-class RateLimitingFilter extends \lang\Object implements \scriptlet\Filter {
+class RateLimitingFilter implements Filter {
   private $rates, $rate, $timeout;
 
   public function __construct(KeyValueStorage $rates) {
@@ -52,7 +56,7 @@ class RateLimitingFilter extends \lang\Object implements \scriptlet\Filter {
   }
 
   public function filter($request, $response, $invocation) {
-    $remote= $request->getEnvValue('REMOTE_ADDR');
+    $remote= $request->header('Remote-Addr');
 
     $rateLimiter= $this->rates->get($remote) ?: new RateLimiting($this->rate);
     $permitted= $rateLimiter->tryAcquiring(1, $this->timeout);
@@ -63,7 +67,7 @@ class RateLimitingFilter extends \lang\Object implements \scriptlet\Filter {
     $response->setHeader('X-RateLimit-Reset', $rateLimiter->resetTime());
 
     if (!$permitted) {
-      throw new HttpScriptletException('Nope', HttpConstants::STATUS_TOO_MANY_REQUESTS);
+      throw new Error(429, 'Rate limit exceeded');
     }
 
     return $invocation->proceed($request, $response);
