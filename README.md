@@ -58,13 +58,13 @@ class RateLimitingFilter implements Filter {
   public function filter($request, $response, $invocation) {
     $remote= $request->header('Remote-Addr');
 
-    $rateLimiter= $this->rates->get($remote) ?: new RateLimiting($this->rate);
-    $permitted= $rateLimiter->tryAcquiring(1, $this->timeout);
-    $this->rates->put($remote, $rateLimiter);
+    $limits= $this->rates->get($remote) ?: new RateLimiting($this->rate);
+    $permitted= $limits->tryAcquiring(1, $this->timeout);
+    $this->rates->put($remote, $limits);
 
-    $response->setHeader('X-RateLimit-Limit', $rateLimiter->rate()->value());
-    $response->setHeader('X-RateLimit-Remaining', $rateLimiter->remaining());
-    $response->setHeader('X-RateLimit-Reset', $rateLimiter->resetTime());
+    $response->header('X-RateLimit-Limit', $limits->rate()->value());
+    $response->header('X-RateLimit-Remaining', $limits->remaining());
+    $response->header('X-RateLimit-Reset', $limits->resetTime());
 
     if (!$permitted) {
       throw new Error(429, 'Rate limit exceeded');
