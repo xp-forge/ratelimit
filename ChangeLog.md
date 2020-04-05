@@ -3,6 +3,10 @@ Rate limiting ChangeLog
 
 ## ?.?.? / ????-??-??
 
+## 2.0.1 / 2020-04-05
+
+* Made compatible with XP 10 - @thekid
+
 ## 2.0.0 / 2018-12-29
 
 * **Heads up: Dropped PHP 5.5 support** - @thekid
