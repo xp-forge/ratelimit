@@ -1,9 +1,7 @@
 <?php namespace util\invoke\unittest;
 
 use lang\IllegalArgumentException;
-use util\invoke\RateLimiting;
-use util\invoke\Per;
-use util\invoke\Rate;
+use util\invoke\{Per, Rate, RateLimiting};
 
 class RateLimitingTest extends AbstractRateLimitingTest {
   const RATE = 1000;

@@ -1,7 +1,6 @@
 <?php namespace util\invoke\unittest;
 
-use util\invoke\RateLimiting;
-use util\invoke\Rate;
+use util\invoke\{Rate, RateLimiting};
 
 /**
  * Base class for `RateLimiting::resetTime()` method.

@@ -1,8 +1,7 @@
 <?php namespace util\invoke\unittest;
 
 use lang\IllegalArgumentException;
-use util\invoke\Per;
-use util\invoke\Rate;
+use util\invoke\{Per, Rate};
 
 class RateTest extends \unittest\TestCase {
 

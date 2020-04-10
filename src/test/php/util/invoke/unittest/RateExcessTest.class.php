@@ -1,8 +1,6 @@
 <?php namespace util\invoke\unittest;
 
-use util\invoke\RateLimiting;
-use util\invoke\Per;
-use util\invoke\Rate;
+use util\invoke\{Per, Rate, RateLimiting};
 
 class RateExcessTest extends AbstractRateLimitingTest {
   private $fixture;
