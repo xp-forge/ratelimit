@@ -1,26 +1,22 @@
 <?php namespace util\invoke\unittest;
 
+use unittest\TestCase;
 use util\invoke\Clock;
 
-abstract class AbstractRateLimitingTest extends \unittest\TestCase {
+abstract class AbstractRateLimitingTest extends TestCase {
   const CLOCK_START = 250944900.1;
 
   protected static $clock;
 
-  /**
-   * Defines a clock for testing purposes
-   *
-   * @return void
-   */
   #[@beforeClass]
   public static function clock() {
-    self::$clock= newinstance(Clock::class, [], '{
+    self::$clock= new class() implements Clock {
       private $time= 0.0;
       public function resetTo($time) { $this->time= $time; }
       public function forward($seconds) { $this->time+= $seconds; }
       public function wait($seconds) { $this->time+= $seconds; }
       public function time() { return $this->time; }
-    }');
+    };
   }
 
   /**
