@@ -1,6 +1,6 @@
 <?php namespace util\invoke\unittest;
 
-use unittest\TestCase;
+use unittest\{BeforeClass, TestCase};
 use util\invoke\Clock;
 
 abstract class AbstractRateLimitingTest extends TestCase {
@@ -8,7 +8,7 @@ abstract class AbstractRateLimitingTest extends TestCase {
 
   protected static $clock;
 
-  #[@beforeClass]
+  #[BeforeClass]
   public static function clock() {
     self::$clock= new class() implements Clock {
       private $time= 0.0;

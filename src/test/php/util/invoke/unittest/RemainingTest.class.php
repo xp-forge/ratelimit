@@ -1,5 +1,6 @@
 <?php namespace util\invoke\unittest;
 
+use unittest\{Test, Values};
 use util\invoke\{Rate, RateLimiting};
 
 /**
@@ -29,24 +30,24 @@ abstract class RemainingTest extends AbstractRateLimitingTest {
     $this->fixture= new RateLimiting(new Rate(self::RATE, $this->unit()), self::$clock);
   }
 
-  #[@test]
+  #[Test]
   public function initially_equals_rate() {
     $this->assertEquals(self::RATE, $this->fixture->remaining());
   }
 
-  #[@test]
+  #[Test]
   public function after_having_acquired_one() {
     $this->fixture->acquire();
     $this->assertEquals(self::RATE - 1, $this->fixture->remaining());
   }
 
-  #[@test]
+  #[Test]
   public function after_having_acquired_limit() {
     $this->fixture->acquire(self::RATE);
     $this->assertEquals(0, $this->fixture->remaining());
   }
 
-  #[@test, @values([2, 3, 4])]
+  #[Test, Values([2, 3, 4])]
   public function after_having_acquired_one_multiple_times($times) {
     for ($i= 0; $i < $times; $i++) {
       $this->fixture->acquire();
@@ -54,21 +55,21 @@ abstract class RemainingTest extends AbstractRateLimitingTest {
     $this->assertEquals(self::RATE - $times, $this->fixture->remaining());
   }
 
-  #[@test]
+  #[Test]
   public function after_having_acquired_limit_and_then_acquiring_one_more() {
     $this->fixture->acquire(self::RATE);
     $this->fixture->acquire();
     $this->assertEquals(self::RATE - 1, $this->fixture->remaining());
   }
 
-  #[@test]
+  #[Test]
   public function after_having_acquired_limit_and_then_acquiring_limit() {
     $this->fixture->acquire(self::RATE);
     $this->fixture->acquire(self::RATE);
     $this->assertEquals(0, $this->fixture->remaining());
   }
 
-  #[@test]
+  #[Test]
   public function reset_after_having_waited_until_next_end_of_unit() {
     $this->fixture->acquire();
     self::$clock->forward($this->unit()->seconds());

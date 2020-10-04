@@ -1,5 +1,6 @@
 <?php namespace util\invoke\unittest;
 
+use unittest\{Test, Values};
 use util\invoke\RateLimiting;
 
 class ClockOffsetTest extends AbstractRateLimitingTest {
@@ -18,7 +19,7 @@ class ClockOffsetTest extends AbstractRateLimitingTest {
   /** @return var[][] */
   protected function offsets() { return [[0.0], [0.1], [0.5], [0.9], [1.0]]; }
 
-  #[@test, @values('offsets')]
+  #[Test, Values('offsets')]
   public function acquire($offset) {
     self::$clock->forward($offset);
     $this->fixture->acquire();
@@ -26,7 +27,7 @@ class ClockOffsetTest extends AbstractRateLimitingTest {
     $this->assertDouble(self::CLOCK_START + 1.0 + $offset, self::$clock->time());
   }
 
-  #[@test, @values('offsets')]
+  #[Test, Values('offsets')]
   public function tryAcquiring_with_one_second_timeout($offset) {
     self::$clock->forward($offset);
     $this->fixture->acquire();
@@ -34,7 +35,7 @@ class ClockOffsetTest extends AbstractRateLimitingTest {
     $this->assertDouble(self::CLOCK_START + 1.0 + $offset, self::$clock->time());
   }
 
-  #[@test, @values('offsets')]
+  #[Test, Values('offsets')]
   public function tryAcquiring_with_timeout_larger_than_one_second($offset) {
     self::$clock->forward($offset);
     $this->fixture->acquire();
@@ -42,7 +43,7 @@ class ClockOffsetTest extends AbstractRateLimitingTest {
     $this->assertDouble(self::CLOCK_START + 1.0 + $offset, self::$clock->time());
   }
 
-  #[@test, @values('offsets')]
+  #[Test, Values('offsets')]
   public function tryAcquiring_with_timeout_less_than_one_second($offset) {
     self::$clock->forward($offset);
     $this->fixture->acquire();

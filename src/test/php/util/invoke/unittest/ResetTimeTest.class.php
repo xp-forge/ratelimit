@@ -1,5 +1,6 @@
 <?php namespace util\invoke\unittest;
 
+use unittest\{Test, Values};
 use util\invoke\{Rate, RateLimiting};
 
 /**
@@ -32,25 +33,25 @@ abstract class ResetTimeTest extends AbstractRateLimitingTest {
   /** @return var[][] */
   protected function permits() { return [[1], [2], [self::RATE - 1], [self::RATE]]; }
 
-  #[@test]
+  #[Test]
   public function initially_null() {
     $this->assertNull($this->fixture->resetTime());
   }
 
-  #[@test, @values('permits')]
+  #[Test, Values('permits')]
   public function after_acquiring($permits) {
     $this->fixture->acquire($permits);
     $this->assertDouble(self::CLOCK_START + $this->unit()->seconds(), $this->fixture->resetTime());
   }
 
-  #[@test, @values([0.0, 1.0, 6100.8, 86400.0])]
+  #[Test, Values([0.0, 1.0, 6100.8, 86400.0])]
   public function after_sleeping_and_then_acquiring($sleep) {
     self::$clock->forward($sleep);
     $this->fixture->acquire();
     $this->assertDouble(self::CLOCK_START + $sleep + $this->unit()->seconds(), $this->fixture->resetTime());
   }
 
-  #[@test, @values([0.0, 1.0, 6100.8, 86400.0])]
+  #[Test, Values([0.0, 1.0, 6100.8, 86400.0])]
   public function after_acquiring_and_then_sleeping($sleep) {
     $this->fixture->acquire();
     self::$clock->forward($sleep);

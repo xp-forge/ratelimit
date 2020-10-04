@@ -1,5 +1,6 @@
 <?php namespace util\invoke\unittest;
 
+use unittest\Test;
 use util\invoke\RateLimiting;
 
 class AcquiringTest extends AbstractRateLimitingTest {
@@ -15,20 +16,20 @@ class AcquiringTest extends AbstractRateLimitingTest {
     $this->rate= (int)$rate;
   }
 
-  #[@test]
+  #[Test]
   public function first_call_returns_immediately() {
     $fixture= new RateLimiting($this->rate, self::$clock);
     $this->assertDouble(0.0, $fixture->acquire(1));
   }
 
-  #[@test]
+  #[Test]
   public function sleeps_for_one_second_if_rate_exceeded() {
     $fixture= new RateLimiting($this->rate, self::$clock);
     $fixture->acquire($this->rate);
     $this->assertDouble(1.0, $fixture->acquire(1));
   }
 
-  #[@test]
+  #[Test]
   public function returns_immediately_after_having_slept_for_one_second() {
     $fixture= new RateLimiting($this->rate, self::$clock);
     $fixture->acquire($this->rate);

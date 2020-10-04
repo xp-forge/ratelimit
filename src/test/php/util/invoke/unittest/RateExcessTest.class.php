@@ -1,5 +1,6 @@
 <?php namespace util\invoke\unittest;
 
+use unittest\Test;
 use util\invoke\{Per, Rate, RateLimiting};
 
 class RateExcessTest extends AbstractRateLimitingTest {
@@ -15,7 +16,7 @@ class RateExcessTest extends AbstractRateLimitingTest {
     $this->fixture= new RateLimiting(10, self::$clock);
   }
 
-  #[@test]
+  #[Test]
   public function try_acquiring_10_times_than_limit() {
     $this->assertTrue($this->fixture->tryAcquiring(100));
     $this->assertDouble(10.0, $this->fixture->acquire(1));
@@ -25,7 +26,7 @@ class RateExcessTest extends AbstractRateLimitingTest {
     // [10  [10  [10  [10  [10  [10  [10  [10  [10  [10  [1
   }
 
-  #[@test]
+  #[Test]
   public function try_acquiring_one_more_than_limit() {
     $this->assertTrue($this->fixture->tryAcquiring(11));
     $this->assertDouble(1.1, $this->fixture->acquire(1));
@@ -35,7 +36,7 @@ class RateExcessTest extends AbstractRateLimitingTest {
     // [10  [1   [1
   }
 
-  #[@test]
+  #[Test]
   public function try_acquiring_the_limit() {
     $this->assertTrue($this->fixture->tryAcquiring(10));
     $this->assertDouble(1.0, $this->fixture->acquire(1));
@@ -44,7 +45,7 @@ class RateExcessTest extends AbstractRateLimitingTest {
     // [10  [1
   }
 
-  #[@test]
+  #[Test]
   public function try_acquiring_twice_the_limit() {
     $this->assertTrue($this->fixture->tryAcquiring(20));
     $this->assertDouble(2.0, $this->fixture->acquire(1));
@@ -54,7 +55,7 @@ class RateExcessTest extends AbstractRateLimitingTest {
     // [10  [10  [1
   }
 
-  #[@test]
+  #[Test]
   public function try_acquiring_excess_twice() {
     $this->assertTrue($this->fixture->tryAcquiring(11));
     $this->assertDouble(1.1, $this->fixture->acquire(11));
@@ -64,13 +65,13 @@ class RateExcessTest extends AbstractRateLimitingTest {
     // [10  [1   [10  [1
   }
 
-  #[@test]
+  #[Test]
   public function remaining_after_acquiring_excess() {
     $this->fixture->acquire(11);
     $this->assertEquals(0, $this->fixture->remaining());
   }
 
-  #[@test]
+  #[Test]
   public function resetTime_after_acquiring_excess() {
     $this->fixture->acquire(11);
     $this->assertDouble(self::CLOCK_START + 1.0, $this->fixture->resetTime());

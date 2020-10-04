@@ -1,5 +1,6 @@
 <?php namespace util\invoke\unittest;
 
+use unittest\{Test, Values};
 use util\invoke\{Per, Rate, RateLimiting};
 
 class VaryingUnitsTest extends AbstractRateLimitingTest {
@@ -7,7 +8,7 @@ class VaryingUnitsTest extends AbstractRateLimitingTest {
   /** @return var[][] */
   protected function units() { return [[Per::$SECOND], [Per::$MINUTE], [Per::$HOUR], [Per::$DAY]]; }
 
-  #[@test, @values('units')]
+  #[Test, Values('units')]
   public function one_more_than_permitted_results_in_sleep_until_next($unit) {
     $sleep= (double)($unit->seconds() / 2);
     $fixture= new RateLimiting(new Rate(1, $unit), self::$clock);
@@ -17,7 +18,7 @@ class VaryingUnitsTest extends AbstractRateLimitingTest {
     $this->assertDouble(self::CLOCK_START + $unit->seconds(), self::$clock->time());
   }
 
-  #[@test, @values('units')]
+  #[Test, Values('units')]
   public function after_sleeping_until_next($unit) {
     $fixture= new RateLimiting(new Rate(1, $unit), self::$clock);
     $fixture->acquire();
@@ -26,7 +27,7 @@ class VaryingUnitsTest extends AbstractRateLimitingTest {
     $this->assertDouble(self::CLOCK_START + $unit->seconds(), self::$clock->time());
   }
 
-  #[@test, @values('units')]
+  #[Test, Values('units')]
   public function try_acquiring_after_waiting_until_next($unit) {
     $fixture= new RateLimiting(new Rate(1, $unit), self::$clock);
     $fixture->acquire();
@@ -34,21 +35,21 @@ class VaryingUnitsTest extends AbstractRateLimitingTest {
     $this->assertTrue($fixture->tryAcquiring(1));
   }
 
-  #[@test, @values('units')]
+  #[Test, Values('units')]
   public function try_acquiring_with_timeout_of_less_than_unit($unit) {
     $fixture= new RateLimiting(new Rate(1, $unit), self::$clock);
     $fixture->acquire();
     $this->assertFalse($fixture->tryAcquiring(1, $unit->seconds() - 0.5));
   }
 
-  #[@test, @values('units')]
+  #[Test, Values('units')]
   public function try_acquiring_with_timeout_of_exactly_unit($unit) {
     $fixture= new RateLimiting(new Rate(1, $unit), self::$clock);
     $fixture->acquire();
     $this->assertTrue($fixture->tryAcquiring(1, $unit->seconds()));
   }
 
-  #[@test, @values('units')]
+  #[Test, Values('units')]
   public function try_acquiring_with_timeout_of_larger_than_unit($unit) {
     $fixture= new RateLimiting(new Rate(1, $unit), self::$clock);
     $fixture->acquire();
