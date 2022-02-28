@@ -3,6 +3,10 @@ Rate limiting ChangeLog
 
 ## ?.?.? / ????-??-??
 
+## 3.1.0 / 2022-02-28
+
+* Added XP 11 support - @thekid
+
 ## 3.0.0 / 2020-04-10
 
 * Implemented xp-framework/rfc#334: Drop PHP 5.6:
