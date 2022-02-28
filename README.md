@@ -1,10 +1,11 @@
 Rate limiting
 =============
 
-[![Build Status on TravisCI](https://secure.travis-ci.org/xp-forge/ratelimit.svg)](http://travis-ci.org/xp-forge/ratelimit)
+[![Build status on GitHub](https://github.com/xp-forge/ratelimit/workflows/Tests/badge.svg)](https://github.com/xp-forge/ratelimit/actions)
 [![XP Framework Module](https://raw.githubusercontent.com/xp-framework/web/master/static/xp-framework-badge.png)](https://github.com/xp-framework/core)
 [![BSD Licence](https://raw.githubusercontent.com/xp-framework/web/master/static/licence-bsd.png)](https://github.com/xp-framework/core/blob/master/LICENCE.md)
-[![Requires PHP 7.0+](https://raw.githubusercontent.com/xp-framework/web/master/static/php-7_0plus.png)](http://php.net/)
+[![Requires PHP 7.0+](https://raw.githubusercontent.com/xp-framework/web/master/static/php-7_0plus.svg)](http://php.net/)
+[![Supports PHP 8.0+](https://raw.githubusercontent.com/xp-framework/web/master/static/php-8_0plus.svg)](http://php.net/)
 [![Latest Stable Version](https://poser.pugx.org/xp-forge/ratelimit/version.png)](https://packagist.org/packages/xp-forge/ratelimit)
 
 A rate limiting can be used to limit the rate at which physical or logical resources are accessed, e.g. to protect them from intentional or unintentional overuse.
