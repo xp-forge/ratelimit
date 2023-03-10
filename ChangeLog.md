@@ -3,6 +3,8 @@ Rate limiting ChangeLog
 
 ## ?.?.? / ????-??-??
 
+* Merged PR #2: Migrate to new testing library - @thekid
+
 ## 3.1.0 / 2022-02-28
 
 * Added XP 11 support - @thekid
