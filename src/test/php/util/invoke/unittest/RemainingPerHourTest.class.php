@@ -1,5 +1,6 @@
 <?php namespace util\invoke\unittest;
 
+use test\Assert;
 use util\invoke\Per;
 
 class RemainingPerHourTest extends RemainingTest {

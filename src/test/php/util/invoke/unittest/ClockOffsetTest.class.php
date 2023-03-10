@@ -1,53 +1,57 @@
 <?php namespace util\invoke\unittest;
 
-use unittest\{Test, Values};
+use test\{Assert, Test, Values};
 use util\invoke\RateLimiting;
 
 class ClockOffsetTest extends AbstractRateLimitingTest {
-  private $fixture;
 
   /**
-   * Sets up fixture
+   * Creates a new fixture
    *
-   * @return void
+   * @param  int $time
+   * @return util.invoke.RateLimiting
    */
-  public function setUp() {
-    parent::setUp();
-    $this->fixture= new RateLimiting(1, self::$clock);
-  }
+  private function fixture($time) { return new RateLimiting(1, $this->clock->resetTo($time)); }
 
   /** @return var[][] */
-  protected function offsets() { return [[0.0], [0.1], [0.5], [0.9], [1.0]]; }
+  private function offsets() { return [[0.0], [0.1], [0.5], [0.9], [1.0]]; }
 
-  #[Test, Values('offsets')]
+  #[Test, Values(from: 'offsets')]
   public function acquire($offset) {
-    self::$clock->forward($offset);
-    $this->fixture->acquire();
-    $this->fixture->acquire();
-    $this->assertDouble(self::CLOCK_START + 1.0 + $offset, self::$clock->time());
+    $fixture= $this->fixture(self::CLOCK_START + $offset);
+
+    $fixture->acquire();
+    $fixture->acquire();
+    $this->assertDouble(self::CLOCK_START + 1.0 + $offset, $this->clock->time());
   }
 
-  #[Test, Values('offsets')]
+  #[Test, Values(from: 'offsets')]
   public function tryAcquiring_with_one_second_timeout($offset) {
-    self::$clock->forward($offset);
-    $this->fixture->acquire();
-    $this->fixture->tryAcquiring(1, 1.0);
-    $this->assertDouble(self::CLOCK_START + 1.0 + $offset, self::$clock->time());
+    $fixture= $this->fixture(self::CLOCK_START + $offset);
+
+    $fixture->acquire();
+    $fixture->tryAcquiring(1, 1.0);
+
+    $this->assertDouble(self::CLOCK_START + 1.0 + $offset, $this->clock->time());
   }
 
-  #[Test, Values('offsets')]
+  #[Test, Values(from: 'offsets')]
   public function tryAcquiring_with_timeout_larger_than_one_second($offset) {
-    self::$clock->forward($offset);
-    $this->fixture->acquire();
-    $this->fixture->tryAcquiring(1, 10.0);
-    $this->assertDouble(self::CLOCK_START + 1.0 + $offset, self::$clock->time());
+    $fixture= $this->fixture(self::CLOCK_START + $offset);
+
+    $fixture->acquire();
+    $fixture->tryAcquiring(1, 10.0);
+
+    $this->assertDouble(self::CLOCK_START + 1.0 + $offset, $this->clock->time());
   }
 
-  #[Test, Values('offsets')]
+  #[Test, Values(from: 'offsets')]
   public function tryAcquiring_with_timeout_less_than_one_second($offset) {
-    self::$clock->forward($offset);
-    $this->fixture->acquire();
-    $this->fixture->tryAcquiring(1, 0.1);
-    $this->assertDouble(self::CLOCK_START + $offset, self::$clock->time());
+    $fixture= $this->fixture(self::CLOCK_START + $offset);
+
+    $fixture->acquire();
+    $fixture->tryAcquiring(1, 0.1);
+
+    $this->assertDouble(self::CLOCK_START + $offset, $this->clock->time());
   }
 }
