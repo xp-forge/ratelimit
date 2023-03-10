@@ -1,10 +1,11 @@
 <?php namespace util\invoke\unittest;
 
 use lang\IllegalArgumentException;
-use unittest\{Expect, Test, Values};
+use test\Assert;
+use test\{Expect, Test, Values};
 use util\invoke\{Per, Rate};
 
-class RateTest extends \unittest\TestCase {
+class RateTest {
 
   #[Test]
   public function can_create() {
@@ -23,37 +24,37 @@ class RateTest extends \unittest\TestCase {
 
   #[Test]
   public function value() {
-    $this->assertEquals(2, (new Rate(2))->value());
+    Assert::equals(2, (new Rate(2))->value());
   }
 
   #[Test]
   public function unit_defaults_to_per_second() {
-    $this->assertEquals(Per::$SECOND, (new Rate(2))->unit());
+    Assert::equals(Per::$SECOND, (new Rate(2))->unit());
   }
 
   #[Test]
   public function unit() {
-    $this->assertEquals(Per::$HOUR, (new Rate(5000, Per::$HOUR))->unit());
+    Assert::equals(Per::$HOUR, (new Rate(5000, Per::$HOUR))->unit());
   }
 
   #[Test]
   public function equals_itself() {
     $rate= new Rate(100, Per::$MINUTE);
-    $this->assertEquals($rate, $rate);
+    Assert::equals($rate, $rate);
   }
 
   #[Test]
   public function does_not_equal_other_rate_with_different_unit() {
-    $this->assertNotEquals(new Rate(100, Per::$MINUTE), new Rate(100, Per::$SECOND));
+    Assert::notEquals(new Rate(100, Per::$MINUTE), new Rate(100, Per::$SECOND));
   }
 
   #[Test]
   public function does_not_equal_other_rate_with_different_value() {
-    $this->assertNotEquals(new Rate(100, Per::$MINUTE), new Rate(200, Per::$MINUTE));
+    Assert::notEquals(new Rate(100, Per::$MINUTE), new Rate(200, Per::$MINUTE));
   }
 
   #[Test]
   public function string_representation() {
-    $this->assertEquals('util.invoke.Rate(100 / hour)', (new Rate(100, Per::$HOUR))->toString());
+    Assert::equals('util.invoke.Rate(100 / hour)', (new Rate(100, Per::$HOUR))->toString());
   }
 }

@@ -1,17 +1,16 @@
 <?php namespace util\invoke\unittest;
 
-use unittest\{Test, Values};
+use test\{Assert, Test, Values};
 use util\invoke\{Rate, RateLimiting};
 
 /**
  * Base class for `RateLimiting::resetTime()` method.
  *
- * @see  xp://util.invoke.unittest.ResetTimePerSecondTest
- * @see  xp://util.invoke.unittest.ResetTimePerHourTest
+ * @see  util.invoke.unittest.ResetTimePerSecondTest
+ * @see  util.invoke.unittest.ResetTimePerHourTest
  */
 abstract class ResetTimeTest extends AbstractRateLimitingTest {
-  const RATE = 1000;
-  private $fixture;
+  const RATE= 1000;
 
   /**
    * Returns the unit to use. Implemented in subclasses.
@@ -20,41 +19,49 @@ abstract class ResetTimeTest extends AbstractRateLimitingTest {
    */
   protected abstract function unit();
 
-  /**
-   * Sets up fixture
-   *
-   * @return void
-   */
-  public function setUp() {
-    parent::setUp();
-    $this->fixture= new RateLimiting(new Rate(self::RATE, $this->unit()), self::$clock);
-  }
-
   /** @return var[][] */
   protected function permits() { return [[1], [2], [self::RATE - 1], [self::RATE]]; }
 
-  #[Test]
-  public function initially_null() {
-    $this->assertNull($this->fixture->resetTime());
+  /**
+   * Creates a new fixture
+   *
+   * @param  int $time
+   * @return util.invoke.RateLimiting
+   */
+  protected function fixture($time= self::CLOCK_START) {
+    return new RateLimiting(new Rate(self::RATE, $this->unit()), $this->clock->resetTo($time));
   }
 
-  #[Test, Values('permits')]
+  #[Test]
+  public function initially_null() {
+    $fixture= $this->fixture();
+
+    Assert::null($fixture->resetTime());
+  }
+
+  #[Test, Values(from: 'permits')]
   public function after_acquiring($permits) {
-    $this->fixture->acquire($permits);
-    $this->assertDouble(self::CLOCK_START + $this->unit()->seconds(), $this->fixture->resetTime());
+    $fixture= $this->fixture();
+    $fixture->acquire($permits);
+
+    $this->assertDouble(self::CLOCK_START + $this->unit()->seconds(), $fixture->resetTime());
   }
 
   #[Test, Values([0.0, 1.0, 6100.8, 86400.0])]
   public function after_sleeping_and_then_acquiring($sleep) {
-    self::$clock->forward($sleep);
-    $this->fixture->acquire();
-    $this->assertDouble(self::CLOCK_START + $sleep + $this->unit()->seconds(), $this->fixture->resetTime());
+    $fixture= $this->fixture();
+    $this->clock->forward($sleep);
+    $fixture->acquire();
+
+    $this->assertDouble(self::CLOCK_START + $sleep + $this->unit()->seconds(), $fixture->resetTime());
   }
 
   #[Test, Values([0.0, 1.0, 6100.8, 86400.0])]
   public function after_acquiring_and_then_sleeping($sleep) {
-    $this->fixture->acquire();
-    self::$clock->forward($sleep);
-    $this->assertDouble(self::CLOCK_START + $this->unit()->seconds(), $this->fixture->resetTime());
+    $fixture= $this->fixture();
+    $fixture->acquire();
+    $this->clock->forward($sleep);
+
+    $this->assertDouble(self::CLOCK_START + $this->unit()->seconds(), $fixture->resetTime());
   }
 }

@@ -1,39 +1,42 @@
 <?php namespace util\invoke\unittest;
 
-use unittest\Test;
+use test\{Assert, Test};
 use util\invoke\RateLimiting;
 
 class AcquiringTest extends AbstractRateLimitingTest {
+  private $rate= 1;
 
   /**
-   * Constructor
+   * Creates a new fixture
    *
-   * @param string $name
-   * @param int $rate Defaults to 1
+   * @param  int $time
+   * @return util.invoke.RateLimiting
    */
-  public function __construct($name, $rate= 1) {
-    parent::__construct($name);
-    $this->rate= (int)$rate;
+  private function fixture($time= self::CLOCK_START) {
+    return new RateLimiting($this->rate, $this->clock->resetTo($time));
   }
 
   #[Test]
   public function first_call_returns_immediately() {
-    $fixture= new RateLimiting($this->rate, self::$clock);
+    $fixture= $this->fixture();
+
     $this->assertDouble(0.0, $fixture->acquire(1));
   }
 
   #[Test]
   public function sleeps_for_one_second_if_rate_exceeded() {
-    $fixture= new RateLimiting($this->rate, self::$clock);
+    $fixture= $this->fixture();
     $fixture->acquire($this->rate);
+
     $this->assertDouble(1.0, $fixture->acquire(1));
   }
 
   #[Test]
   public function returns_immediately_after_having_slept_for_one_second() {
-    $fixture= new RateLimiting($this->rate, self::$clock);
+    $fixture= $this->fixture();
     $fixture->acquire($this->rate);
-    self::$clock->forward(1.0);
+    $this->clock->forward(1.0);
+
     $this->assertDouble(0.0, $fixture->acquire(1));
   }
 }
