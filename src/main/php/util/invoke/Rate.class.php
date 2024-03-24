@@ -14,10 +14,10 @@ class Rate {
    * Creates a new rate
    *
    * @param  int $value Queries per unit to permit. Must be greater than 0.
-   * @param  util.invoke.Per $unit Unit to use, defaulting to Per::$SECOND
+   * @param  ?util.invoke.Per $unit Unit to use, defaulting to Per::$SECOND
    * @throws lang.IllegalArgumentException
    */
-  public function __construct($value, Per $unit= null) {
+  public function __construct($value, $unit= null) {
     if ($value <= 0) {
       throw new IllegalArgumentException('Value cannot be zero or negative');
     }

@@ -27,16 +27,16 @@ class RateLimiting {
    * Creates a new rate limiting instance
    *
    * @param  var $arg Either a rate instance or an integer referring to a rate per second
-   * @param  util.invoke.Clock The clock to use; defaults to system clock.
+   * @param  ?util.invoke.Clock The clock to use; defaults to system clock.
    * @throws lang.IllegalArgumentException
    */
-  public function __construct($arg, Clock $clock= null) {
+  public function __construct($arg, $clock= null) {
     if ($arg instanceof Rate) {
       $this->rate= $arg;
     } else {
       $this->rate= new Rate($arg, Per::$SECOND);
     }
-    $this->clock= $clock ?: new SystemClock();
+    $this->clock= $clock ?? new SystemClock();
   }
 
   /** @return util.invoke.Rate */
